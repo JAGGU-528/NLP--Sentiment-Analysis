@@ -10,6 +10,7 @@ from nltk.tokenize import word_tokenize
 @st.cache_resource
 def download_nltk_resources():
     nltk.download('punkt', quiet=True)
+    nltk.download('punkt_tab', quiet=True) 
     nltk.download('stopwords', quiet=True)
     nltk.download('wordnet', quiet=True)
     return True
