@@ -198,7 +198,7 @@ with col2:
             st.markdown("#### 📈 Probability Breakdown")
             
             # Display probabilities as progress bars
-           for label in ['Negative', 'Neutral', 'Positive']:
+            for label in ['Negative', 'Neutral', 'Positive']:
                prob = float(prob_dict[label])
                color = {
                     'Negative': '🔴',
