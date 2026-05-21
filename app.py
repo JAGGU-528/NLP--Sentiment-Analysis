@@ -55,18 +55,27 @@ def preprocess_text(text):
 # ===========================
 
 @st.cache_resource
-def load_model():
+def load_models():
+
     try:
-        pipeline = joblib.load('sentiment_pipeline.pkl')
-        return pipeline
+        model = joblib.load('xgboost_sentiment_model.pkl')
+
+        tfidf = joblib.load('tfidf_vectorizer.pkl')
+
+        label_encoder = joblib.load('label_encoder.pkl')
+
+        return model, tfidf, label_encoder
+
     except FileNotFoundError:
-        st.error("❌ Model file not found! Please ensure 'sentiment_pipeline.pkl' is in the same directory.")
-        st.stop()
-    except Exception as e:
-        st.error(f"❌ Error loading model: {e}")
+        st.error("❌ Model files not found!")
         st.stop()
 
-pipeline = load_model()
+    except Exception as e:
+        st.error(f"❌ Error loading files: {e}")
+        st.stop()
+
+
+model, tfidf, label_encoder = load_models()
 
 # ===========================
 # PAGE CONFIG
@@ -141,20 +150,36 @@ with col2:
             st.warning("⚠️ Please enter some text to analyze.")
         else:
             with st.spinner("Analyzing sentiment... ⏳"):
-                # CRITICAL: Preprocess BEFORE prediction
+                # Preprocess
                 cleaned_text = preprocess_text(user_input)
-                
-                # Predict
-                prediction = pipeline.predict([cleaned_text])[0]
-                probabilities = pipeline.predict_proba([cleaned_text])[0]
-                confidence = max(probabilities) * 100
-                
-                # Get class labels in correct order
-                class_labels = pipeline.classes_  # ['Negative', 'Neutral', 'Positive']
-                
-                # Map probabilities to labels
-                prob_dict = dict(zip(class_labels, probabilities))
             
+                # TF-IDF transform
+                vectorized = tfidf.transform([cleaned_text])
+            
+                # Sparse → Dense
+                vectorized_dense = vectorized.toarray()
+            
+                # Prediction
+                prediction_encoded = model.predict(vectorized_dense)[0]
+            
+                # Decode label
+                prediction = label_encoder.inverse_transform(
+                    [prediction_encoded]
+                )[0]
+            
+                # Probabilities
+                probabilities = model.predict_proba(
+                    vectorized_dense
+                )[0]
+            
+                # Confidence
+                confidence = max(probabilities) * 100
+            
+                # Labels
+                class_labels = label_encoder.classes_
+            
+                # Probability dictionary
+                prob_dict = dict(zip(class_labels, probabilities))            
             # Display result
             st.markdown("#### 🎯 Prediction")
             
@@ -207,6 +232,6 @@ st.markdown("---")
 st.markdown("""
     <div style='text-align: center; color: #888; font-size: 0.9em;'>
     <p>Built with Streamlit • Powered by Scikit-Learn</p>
-    <p>Model: Logistic Regression with TF-IDF Vectorization</p>
+    <p>Model: XGBoost with TF-IDF + SMOTE</p>
     </div>
 """, unsafe_allow_html=True)
