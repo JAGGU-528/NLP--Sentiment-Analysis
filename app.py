@@ -204,13 +204,10 @@ with col2:
                     'Negative': '🔴',
                     'Neutral': '⚪',
                     'Positive': '🟢'
-                }[label]
-            
-                st.markdown(f"{color} **{label}**")
-            
-                st.progress(prob)
-            
-                st.caption(f"{prob*100:.1f}%")
+               }[label]
+               st.markdown(f"{color} **{label}**")
+               st.progress(prob)
+               st.caption(f"{prob*100:.1f}%")
             
             # Debug info (collapsible)
             with st.expander("🔍 Debug Information"):
