@@ -183,4 +183,4 @@ Streamlit Interface
 ```
 
 # 👨‍💻 Author
-** Mr. Zero **
+** JAGGU-528 **
